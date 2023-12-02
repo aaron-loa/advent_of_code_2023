@@ -1,8 +1,4 @@
-use std::cmp::max;
-
-const RED: usize = 12;
-const GREEN: usize = 13;
-const BLUE: usize = 14;
+use std::{cmp::max, collections::HashMap, io::ErrorKind};
 
 fn part1() {
     let input = include_str!("./input");
@@ -10,47 +6,24 @@ fn part1() {
         .lines()
         .into_iter()
         .map(|line| {
-            let start = line.find(":").unwrap();
-            line[start + 1..]
-                .split(";")
+            let (_, rest) = line.split_once(":").expect("not good");
+            rest.split(";")
                 .map(|x| x.trim().split(",").collect::<Vec<_>>())
                 .collect::<Vec<_>>()
         })
         .collect();
 
     let mut sum = 0;
+    let lut = HashMap::from([("green", 13usize), ("red", 12), ("blue", 14)]);
+
     for (idx, sets) in splits.iter().enumerate() {
-        let mut legal = true;
-
-        for pairs in sets {
-            for pair in pairs {
-                let elements: Vec<_> = pair.trim().split(" ").collect();
-                println!("{:?}", elements);
-                match elements[1] {
-                    "red" => {
-                        if elements[0].parse::<usize>().unwrap() > RED {
-                            legal = false;
-                            break;
-                        }
-                    }
-                    "blue" => {
-                        if elements[0].parse::<usize>().unwrap() > BLUE {
-                            legal = false;
-                            break;
-                        }
-                    }
-                    "green" => {
-                        if elements[0].parse::<usize>().unwrap() > GREEN {
-                            legal = false;
-                            break;
-                        }
-                    }
-                    _ => panic!("not good"),
-                }
+        if sets.iter().flatten().all(|x| {
+            let (value, color) = x.trim().split_once(" ").expect("not good");
+            if value.parse::<usize>().unwrap() > *lut.get(color).unwrap() {
+                return false;
             }
-        }
-
-        if legal {
+            return true;
+        }) {
             sum += idx + 1;
         }
     }
@@ -75,18 +48,13 @@ impl Maxes {
     fn set(&mut self, elements: &Vec<&str>) {
         let value = elements[0].parse::<usize>().unwrap();
         match elements[1] {
-            "red" => {
-                self.red = max(self.red, value);
-            }
-            "blue" => {
-                self.blue = max(self.blue, value);
-            }
-            "green" => {
-                self.green = max(self.green, value);
-            }
+            "red" => self.red = max(self.red, value),
+            "blue" => self.blue = max(self.blue, value),
+            "green" => self.green = max(self.green, value),
             _ => panic!("not good"),
         }
     }
+
     fn power(&self) -> usize {
         return self.blue * self.green * self.red;
     }
@@ -98,29 +66,32 @@ fn part2() {
         .lines()
         .into_iter()
         .map(|line| {
-            let start = line.find(":").unwrap();
-            line[start + 1..]
-                .split(";")
+            let (_, rest) = line.split_once(":").expect("not good");
+            rest.split(";")
                 .map(|x| x.trim().split(",").collect::<Vec<_>>())
                 .collect::<Vec<_>>()
         })
         .collect();
 
-    let mut sum = 0;
-    for sets in splits {
-        sum += sets
-            .iter()
-            .flatten()
-            .fold(Maxes::new(), |mut max, x| {
-                let elements: Vec<_> = x.trim().split(" ").collect();
-                max.set(&elements);
-                max
-            })
-            .power();
-    }
+    let sum: usize = splits
+        .iter()
+        .map(|x| {
+            x.iter()
+                .flatten()
+                .fold(Maxes::new(), |mut max, x| {
+                    let elements: Vec<_> = x.trim().split(" ").collect();
+                    max.set(&elements);
+                    max
+                })
+                .power()
+        })
+        .sum();
     println!("{sum}");
 }
 
 fn main() {
-    part2();
+    let start = std::time::Instant::now();
+    part1();
+    let end = std::time::Instant::now();
+    println!("Time: {:?}", end - start);
 }
