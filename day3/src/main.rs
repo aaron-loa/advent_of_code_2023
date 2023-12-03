@@ -56,7 +56,6 @@ fn find_number(y: usize, x: usize) -> Option<usize> {
         });
 
     let res = string.parse::<usize>().unwrap();
-    println!("{res}");
     return Some(res);
 }
 
@@ -77,8 +76,6 @@ fn check_rectangle_part_2(from_x: i32, from_y: i32, to_x: i32, to_y: i32) -> Opt
             }
         }
     }
-
-    println!("len of set: {}", set.len());
 
     if set.len() == 2 {
         return Some(set.iter().product());
@@ -130,7 +127,6 @@ fn part1() {
                         };
                         let from_x = x as i32 - state.len() as i32 - 1;
                         let from_y = y as i32 - 1;
-                        println!("{state} {value}, len {}, x {x}, y {y}", state.len());
                         if check_rectangle_part_1(from_x, from_y, (x + 1) as i32, (y + 1) as i32) {
                             sum += value;
                         }
@@ -147,5 +143,8 @@ fn part1() {
 }
 
 fn main() {
+    let start = std::time::Instant::now();
     part2();
+    let end = std::time::Instant::now();
+    println!("{:?}", (end - start));
 }
