@@ -1,9 +1,7 @@
 fn extract_numbers(numbers: &str) -> Vec<usize> {
     numbers
         .split_whitespace()
-        .map(|x| {
-            x.parse().unwrap()
-        })
+        .map(|x| x.parse().unwrap())
         .collect()
 }
 
@@ -21,7 +19,7 @@ fn part2() {
             let numbers = extract_numbers(numbers);
             let contains = numbers.iter().filter(|x| lut.contains(x)).count();
             let current = map[idx].clone();
-            map[idx+1..=idx+contains]
+            map[idx + 1..=idx + contains]
                 .iter_mut()
                 .for_each(|x| *x += current)
         });
@@ -29,9 +27,7 @@ fn part2() {
 }
 
 fn part1() {
-    let input = include_str!("./input");
-
-    let result: usize = input
+    let result: usize = include_str!("./input")
         .lines()
         .into_iter()
         .map(|line| {
@@ -46,12 +42,12 @@ fn part1() {
             return 2usize.pow((contains - 1) as u32);
         })
         .sum();
-    println!("{result}");
+    println!("{}", result);
 }
 
 fn main() {
     let now = std::time::Instant::now();
-    part2();
+    part1();
     let end = std::time::Instant::now();
-    println!("{:?}", end - now);
+    println!("{:?}", (end - now));
 }
