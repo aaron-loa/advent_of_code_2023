@@ -32,7 +32,6 @@ fn process_vector(vector: &Vec<Vec<char>>) -> Option<usize> {
                     return None;
                 } else if diff.len() == 1 && !second_chance {
                     change_this = ((main_index as i32 - i as i32).abs() as usize, diff[0].0);
-                    println!("change_this: {:?}", change_this);
                     second_chance = true;
                     return Some(second_chance);
                 } else {
@@ -51,10 +50,7 @@ fn part2() {
 
     let groups = input.split("\n\n").collect::<Vec<&str>>();
     let mut sum = 0;
-    let mut i = 0;
     for group in groups {
-        println!("group: {}", i);
-        i += 1;
         let mut vector = group
             .split("\n")
             .map(|x| x.chars().collect::<Vec<_>>())
@@ -72,7 +68,6 @@ fn part2() {
 
         let mut reflection_x = 0;
         if !found {
-            println!("rotating");
             let rotated = rotate(&vector);
             let res = process_vector(&rotated);
             if let Some(line_idx) = res {
@@ -80,10 +75,6 @@ fn part2() {
                 reflection_x = line_idx + 1;
             }
         }
-        println!(
-            "reflection_x: {}, reflection_y: {}",
-            reflection_x, reflection_y
-        );
         sum += reflection_x + reflection_y * 100;
     }
     println!("sum: {}", sum);
