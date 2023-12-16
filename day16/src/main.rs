@@ -1,6 +1,7 @@
 use std::{collections::HashSet, io};
 
 use lazy_static::lazy_static;
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
 #[inline(always)]
 fn can_move(to_point: &(i64, i64)) -> bool {
@@ -223,9 +224,6 @@ fn part2() {
             _ => {}
         }
     }
-    for i in starting_beams.iter() {
-        println!("{:?}", i);
-    }
     for i in 0..MAP[0].len() {
         // bottom row direction is TO UP
         let current_char = MAP[MAP.len() - 1][i];
@@ -248,41 +246,46 @@ fn part2() {
         }
     }
 
-    let mut max = usize::MIN;
-    for starting_beam in starting_beams.iter() {
-        let mut beams = vec![];
-        let mut positions = HashSet::new();
-        beams.push(starting_beam.clone());
-        positions.insert((
-            starting_beam.position.0,
-            starting_beam.position.1,
-            starting_beam.direction.clone(),
-        ));
-        while beams.iter().any(|x| x.can_move) {
-            let mut new_beams = vec![];
-            for beam in beams.iter_mut() {
-                let can_move_return = beam.move_beam(&positions);
+    let max = starting_beams
+        .par_iter()
+        .map(|starting_beam| {
+            let mut beams = vec![];
+            let mut positions = HashSet::new();
+            beams.push(starting_beam.clone());
+            positions.insert((
+                starting_beam.position.0,
+                starting_beam.position.1,
+                starting_beam.direction.clone(),
+            ));
+            while beams.iter().any(|x| x.can_move) {
+                let mut new_beams = vec![];
+                for beam in beams.iter_mut() {
+                    let can_move_return = beam.move_beam(&positions);
 
-                if let Some(split_direction) = can_move_return.split {
-                    new_beams.push(Beam::new(split_direction, can_move_return.position));
-                }
+                    if let Some(split_direction) = can_move_return.split {
+                        new_beams.push(Beam::new(split_direction, can_move_return.position));
+                    }
 
-                if beam.can_move {
-                    positions.insert((beam.position.0, beam.position.1, beam.direction.clone()));
+                    if beam.can_move {
+                        positions.insert((
+                            beam.position.0,
+                            beam.position.1,
+                            beam.direction.clone(),
+                        ));
+                    }
                 }
+                beams.extend(new_beams);
+                beams = beams
+                    .into_iter()
+                    .filter(|x| x.can_move)
+                    .collect::<Vec<Beam>>();
             }
-            beams.extend(new_beams);
-            beams = beams
-                .into_iter()
-                .filter(|x| x.can_move)
-                .collect::<Vec<Beam>>();
-        }
-        let set: HashSet<(i64, i64)> = positions.iter().map(|x| (x.0, x.1)).collect();
+            let set: HashSet<(i64, i64)> = positions.iter().map(|x| (x.0, x.1)).collect();
+            set.len()
+        })
+        .max()
+        .unwrap();
 
-        if set.len() > max {
-            max = set.len();
-        }
-    }
     println!("Part 2: {}", max);
 }
 
